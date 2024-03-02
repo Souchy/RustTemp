@@ -1,0 +1,10 @@
+version: '2'
+services:
+  mongo:
+    image: mongo
+  redis:
+    image: redis
+  coral:
+    build: ./coral
+  coraline:
+    build: ./coraline

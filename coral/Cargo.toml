@@ -1,0 +1,17 @@
+[package]
+name = "coral"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+teal = { path = "../teal" }
+redis = "*"
+tokio = {version = "1.32.0", features = ["full"]}
+serde = "1.0.188"
+futures = "0.3.28"
+
+[dependencies.mongodb]
+version = "2.8.0"
+features = ["tokio-runtime"]
