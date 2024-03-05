@@ -1,6 +1,8 @@
 {
     "rust-analyzer.linkedProjects": [
-        ".\\coral\\Cargo.toml",
-        ".\\teal\\Cargo.toml"
+        ".\\Matcher\\coral\\Cargo.toml",
+        ".\\Matcher\\coraline\\Cargo.toml",
+        ".\\Pearl\\spark\\Cargo.toml",
+        ".\\teal\\Cargo.toml",
     ]
 }

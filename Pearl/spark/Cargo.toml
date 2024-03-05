@@ -1,0 +1,29 @@
+[package]
+name = "spark"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+teal = { path = "../../teal" }
+dotenv = "*"
+chrono = { version = "*", features = ["serde"] }
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
+
+# Web
+actix = "*"
+actix-web = "*"
+
+# Auth
+actix-web-httpauth = "*"
+jwt = "*"
+sha2 = "*"
+hmac = "*"
+# argonautica = "*"
+
+# Swagger
+utoipa = { version = "*", features = ["actix_extras", "chrono"] }
+utoipa-swagger-ui = { version = "6", features = ["actix-web"] }
+utoipa_auto_discovery = "*"
