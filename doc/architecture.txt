@@ -1,0 +1,93 @@
+
+The problem is very similar to parallel MapReduce, you still have to sync at the end
+
+Nginx loadbalancing
+	-> sends requests to orchestrators
+
+Orchestrators (plusieurs)
+	-> receives client queue input
+	-> reads db pour get une plage de joueurs avec un elo près du client.
+	-> envoie la plage de matchmaking avec le client obligatoire à un matchmaker
+	On peut aussi avoir un autre orchestrator séparé qui n'écoute pas les requêtes, mais prend des joueurs randomly (les plus vieux) pour essayer de les match
+
+Matchmakers (plusieurs, might merge into orchestrator, in a thread)
+	-> spawns a thread
+	-> checks if a match is possible with the clients info given
+	-> s'il trouve un match, l'envoie au mover
+	-> s'il ne trouve pas de match, renvoie la requête à l'orchestrator? 
+		faut trouver un nouveau match pour le client
+		à ce moment-ci, on peut incrémenter son trycount
+		ce qui peut élargir les conditions de match 
+		(plage d'elo plus grande, ping plus grand, match un 5 man premade group vs 5x1 joueurs etc)
+
+Mover (1 seul)
+	-> recoi un match des matchmakers
+	-> synchronize les demandes de match pour ne pas envoyer un joueur dans 2 matchs
+	-> vérifie & valide que le match ne contient pas de client déjà en jeu 
+		// maybe dont need to recheck if we synchronize properly?
+		sauf que si le mover fail, on veut un fallback, et lui devrait check sûrement
+		le db.write devrait être atomic:
+			enlever la queue + créer un match en 1 requête pour éviter ce problème là
+			https://redis.io/docs/interact/transactions/ -> should also check redis scripts
+			might be able to put the pub inside the transaction as well? otherwise see keyspace notifications
+	-> effectue le db.write: enlève les clients de la queue, créé un match, etc.
+
+	// update: redis est synchronous, so we dont need to synchronize ourselves
+	// the atomic request to move the players from the queue to a game 
+		should already fail if the players are not in queue anymore
+		// I should test this, but yeah on devrait pas avoir besoin
+		// so it's not an issue to try to match a player in multiple places at the same time
+		// therefore, we might just go back to 1 microservice that receives the request and creates a match 
+			(instanced service and then spawning a thread for each request)
+	// Further read on transactions:
+		1. watch that the data is valid (players are in queue) = WATCH player:1:queue:active, player:2:queue:active ou player:1:state (enum idle, inqueue, inmatch, inspectator)
+		2. remove the players from the queue 
+			// redis could fail in between these 2
+			// another service should observe the queue and tell the client: "hey youre not in queue anymore"
+		3. create a match
+			SET player:1:state = inmatch
+			SET player:1:queueTries = 0 // set le queue tries seulement quand un match commence, comme ça si le joueur requeue lui même, ça garde le compte :O
+			
+
+	// More info: https://redis.com/blog/you-dont-need-transaction-rollbacks-in-redis/
+		Other clients won’t see a partial state—meaning that all clients will see the state either before the transaction was applied, or after. 
+		In case of a node failure, once Redis restarts, it will reload either the whole transaction or none of it from the AOF file. 
+
+
+SomeOtherService / Playserver (plusieurs)
+	-> recoie un match valide du mover / ou voit l'info sur la db via subscribe
+		https://redis.io/docs/manual/keyspace-notifications/
+		// what if the observer fails? ou si l'envoie au client fails?
+	-> envoie le match aux clients
+
+
+struct TempMatching // assigns each queueInfo group to a team id
+	queueInfos[]
+	teamsId[]
+
+struct QueueInfo
+	queueId
+	clientIds[]  // can queue with a group
+	startQueueTime
+	tryCount++
+
+struct ClientInfo
+	clientId
+	elo
+	geoposition
+	avg ping time
+
+
+UI monitor/tester
+	-> button spawn queueclient
+	-> see all the orchestrators/matchmakers/movers/playservers
+	-> see where clients are referenced in each service
+		[matchmaker1: -client1, -client2]
+	-> see the clients move out of the queue and into matches
+
+
+The client is probably connected to the Realm server
+	Can each client thread listen to changes on their own client redis key?
+	So that they could send udpates to the client when they enterQueue/exitQueue/enterMatch/exitMatch...
+	thats kind of multiple task threads using the same socket connection... might be hard in rust?	Arc<> it?
+

@@ -29,6 +29,8 @@ use std::env;
 use std::error::Error;
 use teal::onyx::User;
 
+pub mod wish;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let u: User;
@@ -47,6 +49,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // above and must be associated with an event loop.
     let listener = TcpListener::bind(&addr).await?;
     println!("Listening on: {}", addr);
+
+    // crate::red::red::run(listener);
 
     loop {
         // Asynchronously wait for an inbound socket.
@@ -73,6 +77,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 if n == 0 {
                     return;
                 }
+
+                let st = std::str::from_utf8(&buf).unwrap();
+                println!("received: {}", st);
 
                 socket
                     .write_all(&buf[0..n])
