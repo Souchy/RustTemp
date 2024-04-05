@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 teal = { path = "../teal" }
-miniredis ={ path = "../miniredis" }
+miniredis = { path = "../miniredis" }
 tokio = { version = "1", features = ["full"] }
 tokio-stream = "0.1"
 

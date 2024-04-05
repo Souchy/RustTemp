@@ -4,5 +4,7 @@
         ".\\Matcher\\coraline\\Cargo.toml",
         ".\\Pearl\\spark\\Cargo.toml",
         ".\\teal\\Cargo.toml",
+        ".\\miniredis\\Cargo.toml",
+        ".\\minitest\\Cargo.toml",
     ]
 }
