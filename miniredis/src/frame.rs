@@ -2,7 +2,6 @@
 //! parsing frames from a byte array.
 
 use bytes::{Buf, Bytes};
-use tokio::io::AsyncReadExt;
 use std::convert::TryInto;
 use std::fmt;
 use std::io::Cursor;
@@ -263,7 +262,7 @@ fn get_line<'a>(src: &mut Cursor<&'a [u8]>) -> Result<&'a [u8], Error> {
             return Ok(&src.get_ref()[start..i]);
         }
     }
-    
+
     Err(Error::Incomplete)
 }
 

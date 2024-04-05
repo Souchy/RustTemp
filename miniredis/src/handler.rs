@@ -69,7 +69,7 @@ impl Handler {
                     return Ok(());
                 }
             };
-            
+
             // If `None` is returned from `read_frame()` then the peer closed
             // the socket. There is no further work to do and the task can be
             // terminated.

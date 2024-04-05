@@ -6,7 +6,5 @@
         ".\\teal\\Cargo.toml",
         ".\\miniredis\\Cargo.toml",
         ".\\minitest\\Cargo.toml",
-        ".\\miniredis\\Cargo.toml",
-        ".\\Matcher\\coral\\Cargo.toml"
     ]
 }
