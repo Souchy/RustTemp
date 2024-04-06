@@ -116,7 +116,7 @@ impl Client {
         }
     }
     async fn run(&mut self) -> Result<(), Box<dyn Error>> {
-        let mut buf = vec![0; 1024];
+        let mut buf = vec![0; 4 * 1024];
         // In a loop, read data from the socket and write the data back.
         // loop {
         //     let n = self.socket
@@ -153,14 +153,14 @@ impl Client {
             // let cl = self.buffer.clone();
 
             // let st = std::str::from_utf8(&self.buffer).unwrap();
-            let st = std::str::from_utf8(&buf).unwrap();
+            let st = std::str::from_utf8(&buf[0..n]).unwrap();
 
             // self.stream
             //     .write_all(b"pong")
             //     .await
             //     .expect("failed to write data to socket");
             self.socket
-                .write_all(&buf)
+                .write_all(b"pong")
                 .await
                 .expect("failed to write data to socket");
 

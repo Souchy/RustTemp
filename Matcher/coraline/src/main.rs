@@ -57,13 +57,13 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
             .await;
         println!("wrote to stream; success={:?}", result.is_ok());
 
-        let res2 = writer2
-            .lock()
-            .await
-            // .lock().unwrap()
-            .write_all(b"hello world2")
-            .await;
-        println!("wrote to stream; success={:?}", res2.is_ok());
+        // let res2 = writer2
+        //     .lock()
+        //     .await
+        //     // .lock().unwrap()
+        //     .write_all(b"hello world2")
+        //     .await;
+        // println!("wrote to stream; success={:?}", res2.is_ok());
     });
 
     t2.await?;
@@ -84,7 +84,7 @@ impl Client {
     }
     async fn run(&self) {
         println!("t1 start");
-        let mut buf = vec![0; 1024];
+        let mut buf = vec![0; 4 * 1024];
         loop {
             let mut tr = self.reader.lock().await;
             // let mut tr = r;
@@ -100,6 +100,7 @@ impl Client {
 
             let st = std::str::from_utf8(&buf).unwrap();
             println!("received: {}", st);
+            self.writer.lock().await.write_all(b"ping").await.expect("msg");
         }
     }
 }
