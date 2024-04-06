@@ -22,8 +22,11 @@
 
 #![warn(rust_2018_idioms)]
 
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::TcpListener;
+use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
+use tokio::net::{TcpListener, TcpStream};
+use bytes::{Buf, BytesMut};
+use std::io::{self, Cursor};
+use tracing::{debug, error, info, instrument};
 
 use std::env;
 use std::error::Error;
@@ -65,28 +68,156 @@ async fn main() -> Result<(), Box<dyn Error>> {
         // Essentially here we're executing a new task to run concurrently,
         // which will allow all of our clients to be processed concurrently.
 
+        let mut client: Client = Client::new(socket);
+
         tokio::spawn(async move {
-            let mut buf = vec![0; 1024];
 
-            // In a loop, read data from the socket and write the data back.
-            loop {
-                let n = socket
-                    .read(&mut buf)
-                    .await
-                    .expect("failed to read data from socket");
-
-                if n == 0 {
-                    return;
-                }
-
-                let st = std::str::from_utf8(&buf).unwrap();
-                println!("received: {}", st);
-
-                socket
-                    .write_all(&buf[0..n])
-                    .await
-                    .expect("failed to write data to socket");
+            if let Err(err) = client.run().await {
+                error!(cause = ?err, "connection error");
             }
+
+            // let mut buf = vec![0; 1024];
+
+            // // In a loop, read data from the socket and write the data back.
+            // loop {
+            //     let n = socket
+            //         .read(&mut buf)
+            //         .await
+            //         .expect("failed to read data from socket");
+
+            //     if n == 0 {
+            //         return;
+            //     }
+
+            //     let st = std::str::from_utf8(&buf).unwrap();
+            //     println!("received: {}", st);
+
+            //     socket
+            //         .write_all(&buf[0..n])
+            //         .await
+            //         .expect("failed to write data to socket");
+            // }
         });
     }
 }
+
+// pub type Result<T> = std::result::Result<T, Error>;
+
+#[derive(Debug)]
+pub struct Client {
+    // socket: TcpStream,
+    stream: BufWriter<TcpStream>,
+    buffer: BytesMut,
+}
+impl Client {
+    pub fn new(socket: TcpStream) -> Client {
+        Client {
+            // socket,
+            stream: BufWriter::new(socket),
+            buffer: BytesMut::with_capacity(4 * 1024),
+        }
+    }
+    async fn run(&mut self) -> Result<(), Box<dyn Error>> {
+        // let mut buf = vec![0; 1024];
+        // In a loop, read data from the socket and write the data back.
+        // loop {
+        //     let n = self.socket
+        //         .read(&mut buf)
+        //         .await
+        //         .expect("failed to read data from socket");
+
+        //     if n == 0 {
+        //         return;
+        //     }
+
+        //     let st = std::str::from_utf8(&buf).unwrap();
+        //     println!("received: {}", st);
+
+        //     self.socket
+        //         .write_all(&buf[0..n])
+        //         .await
+        //         .expect("failed to write data to socket");
+        // }
+        
+        // with buffer
+        loop {
+            let n = self.stream.read_buf(&mut self.buffer).await?;
+            if n == 0 {
+                println!("client connected terminated");
+                return Ok(());
+            }
+            // let mut buf = Cursor::new(&self.buffer[..]);
+            // let len = buf.read_u16();
+            // let cl = self.buffer.clone();
+
+            let st = std::str::from_utf8(&self.buffer).unwrap();
+            
+            self.stream.write_all("pong\n".as_bytes())
+            .await
+            .expect("failed to write data to socket");
+        
+            println!("received: {}", st);
+        }
+        Ok(())
+    }
+}
+
+/*
+struct Listener;
+impl Listener {
+    pub async fn run(&mut self) -> crate::Result<()> {
+        info!("accepting inbound connections");
+
+        loop {
+            // Wait for a permit to become available
+            //
+            // `acquire_owned` returns a permit that is bound to the semaphore.
+            // When the permit value is dropped, it is automatically returned
+            // to the semaphore.
+            //
+            // `acquire_owned()` returns `Err` when the semaphore has been
+            // closed. We don't ever close the semaphore, so `unwrap()` is safe.
+            let permit = self
+                .limit_connections
+                .clone()
+                .acquire_owned()
+                .await
+                .unwrap();
+
+            // Accept a new socket. This will attempt to perform error handling.
+            // The `accept` method internally attempts to recover errors, so an
+            // error here is non-recoverable.
+            let socket = self.accept().await?;
+
+            // Create the necessary per-connection handler state.
+            let mut handler = Handler {
+                // Get a handle to the shared database.
+                // db: self.db_holder.db(),
+
+                // Initialize the connection state. This allocates read/write
+                // buffers to perform redis protocol frame parsing.
+                connection: Connection::new(socket),
+
+                // Receive shutdown notifications.
+                shutdown: Shutdown::new(self.notify_shutdown.subscribe()),
+
+                // Notifies the receiver half once all clones are
+                // dropped.
+                _shutdown_complete: self.shutdown_complete_tx.clone(),
+            };
+
+            // Spawn a new task to process the connections. Tokio tasks are like
+            // asynchronous green threads and are executed concurrently.
+            tokio::spawn(async move {
+                // Process the connection. If an error is encountered, log it.
+                if let Err(err) = handler.run().await {
+                    error!(cause = ?err, "connection error");
+                }
+                // Move the permit into the task and drop it after completion.
+                // This returns the permit back to the semaphore.
+                drop(permit);
+            });
+        }
+    }
+}
+*/

@@ -84,6 +84,7 @@ UI monitor/tester
 	-> see where clients are referenced in each service
 		[matchmaker1: -client1, -client2]
 	-> see the clients move out of the queue and into matches
+	-> perhaps make a monitor server to send the data to the tauri client when events happen
 
 
 The client is probably connected to the Realm server

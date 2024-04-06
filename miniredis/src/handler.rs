@@ -79,8 +79,8 @@ impl Handler {
             };
 
             
-            let st = std::str::from_utf8(&buf[..]).unwrap();
-            println!("received: {}", st);
+            // let st = std::str::from_utf8(&buf[..]).unwrap();
+            // println!("received: {}", st);
 
 			// self.handle_redis(&frame);
 			// handle(&frame); // todo

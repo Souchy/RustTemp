@@ -101,7 +101,7 @@ fn hello_main() {
         let encoded = imp.serialize();
 		
 		let msg = reg.deserialize(&encoded[..]);
-		msg.handle({});
+		// msg.handle({});
     }
 }
 

@@ -24,7 +24,10 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     let mut stream = TcpStream::connect("127.0.0.1:8080").await?;
     println!("created stream");
 
-    let result = stream.write_all(b"hello world\n").await;
+    let mut result = stream.write_all(b"hello world1\n").await;
+    println!("wrote to stream; success={:?}", result.is_ok());
+    
+    result = stream.write_all(b"hello world2\n").await;
     println!("wrote to stream; success={:?}", result.is_ok());
 
     loop {
@@ -35,8 +38,12 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
             .expect("failed to read data from socket");
 
         if n == 0 {
+            println!("client connected terminated");
             break;
         }
+        
+        let st = std::str::from_utf8(&buf).unwrap();
+        println!("received: {}", st);
     }
 
     Ok(())
