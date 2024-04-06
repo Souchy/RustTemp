@@ -1,4 +1,3 @@
-
 //! A "hello world" echo server with Tokio
 //!
 //! This server will create a TCP listener, accept connections in a loop, and
@@ -22,16 +21,16 @@
 
 #![warn(rust_2018_idioms)]
 
-use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
-use tokio::net::{TcpListener, TcpStream};
 use bytes::{Buf, BytesMut};
 use std::io::{self, Cursor};
+use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
+use tokio::net::{TcpListener, TcpStream};
 use tracing::{debug, error, info, instrument};
 
+use miniredis::server;
 use std::env;
 use std::error::Error;
 use teal::onyx::User;
-use miniredis::server;
 
 pub mod wish;
 
@@ -71,7 +70,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let mut client: Client = Client::new(socket);
 
         tokio::spawn(async move {
-
             if let Err(err) = client.run().await {
                 error!(cause = ?err, "connection error");
             }
@@ -138,7 +136,7 @@ impl Client {
         //         .await
         //         .expect("failed to write data to socket");
         // }
-        
+
         // with buffer
         loop {
             let n = self.stream.read_buf(&mut self.buffer).await?;
@@ -151,12 +149,16 @@ impl Client {
             // let cl = self.buffer.clone();
 
             let st = std::str::from_utf8(&self.buffer).unwrap();
-            
-            self.stream.write_all("pong\n".as_bytes())
-            .await
-            .expect("failed to write data to socket");
-        
+
+            self.stream
+                .write_all("pong\n".as_bytes())
+                .await
+                .expect("failed to write data to socket");
+
             println!("received: {}", st);
+
+            self.buffer.advance(n);
+
         }
         Ok(())
     }
