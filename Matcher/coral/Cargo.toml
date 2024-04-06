@@ -12,7 +12,7 @@ proc-macro = true
 teal = { path = "../../teal" }
 miniredis = { path = "../../miniredis" }
 redis = "*"
-tokio = {version = "1.32.0", features = ["full"]}
+tokio = {version = "*", features = ["full"]}
 serde = "1.0.188"
 futures = "0.3.28"
 bevy_ecs = "*"

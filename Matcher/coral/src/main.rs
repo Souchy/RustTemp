@@ -160,7 +160,7 @@ impl Client {
             //     .await
             //     .expect("failed to write data to socket");
             self.socket
-                .write_all(&buf[0..n])
+                .write_all(&buf)
                 .await
                 .expect("failed to write data to socket");
 
