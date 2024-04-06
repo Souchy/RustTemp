@@ -41,7 +41,7 @@ impl Client {
 			// reg.register(PingMsg::uid(), PingMsg::deserialize);
 			// reg.register(ChatMsg::uid(), ChatMsg::deserialize);
 			// let msg = reg.deserialize(&buf[0..n]);
-			// msg.handle(&self);
+			// let res = msg.handle(&self).await?;
 
 
             // let st = std::str::from_utf8(&buf).unwrap();

@@ -4,7 +4,7 @@ use derive_new::new;
 use serde::{Deserialize, Serialize};
 use tokio::io::AsyncWriteExt;
 use std::{
-    any::{self, type_name, Any}, collections::HashMap, ptr::null, str::Bytes
+    any::{self, type_name, Any}, collections::HashMap, error::Error, ptr::null, str::Bytes
 };
 use crate::net::{client::Client, message::MessageScript};
 
@@ -23,14 +23,15 @@ impl ChatMsg {
 
 impl MessageScript for ChatMsg {
     fn id(&self) -> u8 { Self::uid() }
-    async fn handle(&self, client: &Client) {
-        println!("yo we got ping data {:?}", self);
-		client.writer.lock().await.write_all(b"pong").await.expect("msg");
-    }
-    async fn send(&self, socket_maybe: &Client) {
-        todo!()
-    }
     fn serialize(&self) -> Vec<u8> {
         bincode::serialize(&self).unwrap()
+    }
+    async fn handle(&self, client: &Client) -> Result<(), Box<dyn Error>> {
+        println!("yo we got ping data {:?}", self);
+		client.writer.lock().await.write_all(b"pong").await.expect("msg");
+        Ok(())
+    }
+    async fn send(&self, socket_maybe: &Client) -> Result<(), Box<dyn Error>> {
+        todo!()
     }
 }

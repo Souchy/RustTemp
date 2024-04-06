@@ -1,10 +1,7 @@
 use derive_new::new;
 use serde::{Deserialize, Serialize};
 use std::{
-    any::{self, type_name, Any},
-    collections::HashMap,
-    ptr::null,
-    str::Bytes,
+    any::{self, type_name, Any}, collections::HashMap, error::Error, ptr::null, str::Bytes
 };
 use tokio::io::AsyncWriteExt;
 
@@ -33,7 +30,7 @@ impl MessageScript for PingMsg {
     fn serialize(&self) -> Vec<u8> {
         bincode::serialize(&self).unwrap()
     }
-    async fn handle(&self, client: &Client) {
+    async fn handle(&self, client: &Client) -> Result<(), Box<dyn Error>> {
         println!("yo we got ping data {:?}", self);
         client
             .writer
@@ -42,8 +39,9 @@ impl MessageScript for PingMsg {
             .write_all(b"pong")
             .await
             .expect("msg");
+		Ok(())
     }
-    async fn send(&self, socket_maybe: &Client) {
+    async fn send(&self, socket_maybe: &Client) -> Result<(), Box<dyn Error>> {
         todo!()
     }
 }
