@@ -176,10 +176,10 @@ impl Message for ChatMsg {
 // }
 impl MessageScript for ChatMsg {
     fn id(&self) -> u8 { Self::uid() }
-    fn handle(&self, client: &dyn Any) {
+    fn handle(&self, client: &Client) {
         println!("yo we got ping data {:?}", self);
     }
-    fn send(&self, socket_maybe: &dyn Any) {
+    fn send(&self, socket_maybe: &Client) {
         todo!()
     }
     fn serialize(&self) -> Vec<u8> {

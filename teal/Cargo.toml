@@ -7,3 +7,14 @@ edition = "2021"
 
 [dependencies]
 redis = "*"
+tokio = {version = "*", features = ["full"]}
+tracing = "*"
+
+serde = { version = "*", features = ["derive"] }
+syn = "*"
+quote = "*"
+serde_bytes = "*"
+bincode = "*"
+derive-new = "0.6.0"
+bytes = "1"
+

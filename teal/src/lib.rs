@@ -1,7 +1,23 @@
+
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
+use tokio::net::TcpStream;
+
+use std::error::Error;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
+
+
 pub mod onyx;
 pub mod hi {
     pub mod hello;
 }
+pub mod net;
+
+pub type Reader = Arc<Mutex<OwnedReadHalf>>;
+pub type Writer = Arc<Mutex<OwnedWriteHalf>>;
+
 
 
 pub fn add(left: usize, right: usize) -> usize {
