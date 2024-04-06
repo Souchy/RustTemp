@@ -103,20 +103,20 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 #[derive(Debug)]
 pub struct Client {
-    // socket: TcpStream,
-    stream: BufWriter<TcpStream>,
-    buffer: BytesMut,
+    socket: TcpStream,
+    // stream: BufWriter<TcpStream>,
+    // buffer: BytesMut,
 }
 impl Client {
     pub fn new(socket: TcpStream) -> Client {
         Client {
-            // socket,
-            stream: BufWriter::new(socket),
-            buffer: BytesMut::with_capacity(4 * 1024),
+            socket,
+            // stream: BufWriter::new(socket),
+            // buffer: BytesMut::with_capacity(4 * 1024),
         }
     }
     async fn run(&mut self) -> Result<(), Box<dyn Error>> {
-        // let mut buf = vec![0; 1024];
+        let mut buf = vec![0; 1024];
         // In a loop, read data from the socket and write the data back.
         // loop {
         //     let n = self.socket
@@ -139,7 +139,11 @@ impl Client {
 
         // with buffer
         loop {
-            let n = self.stream.read_buf(&mut self.buffer).await?;
+            // let n = self.stream.read_buf(&mut self.buffer).await?;
+                let n = self.socket
+                    .read(&mut buf)
+                    .await
+                    .expect("failed to read data from socket");
             if n == 0 {
                 println!("client connected terminated");
                 return Ok(());
@@ -148,16 +152,21 @@ impl Client {
             // let len = buf.read_u16();
             // let cl = self.buffer.clone();
 
-            let st = std::str::from_utf8(&self.buffer).unwrap();
+            // let st = std::str::from_utf8(&self.buffer).unwrap();
+            let st = std::str::from_utf8(&buf).unwrap();
 
-            self.stream
-                .write_all("pong\n".as_bytes())
+            // self.stream
+            //     .write_all(b"pong")
+            //     .await
+            //     .expect("failed to write data to socket");
+            self.socket
+                .write_all(&buf[0..n])
                 .await
                 .expect("failed to write data to socket");
 
             println!("received: {}", st);
 
-            self.buffer.advance(n);
+            // self.buffer.advance(n);
 
         }
         Ok(())
