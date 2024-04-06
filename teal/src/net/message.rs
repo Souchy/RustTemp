@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     any::{self, type_name, Any}, collections::HashMap, ptr::null, str::Bytes
 };
-use super::client::Client;
+use crate::net::client::Client;
 
 
 pub trait MessageScript {

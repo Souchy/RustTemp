@@ -54,7 +54,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     any::{self, type_name, Any}, collections::HashMap, ptr::null, str::Bytes
 };
-use super::message::MessageScript;
+use crate::net::message::MessageScript;
 
 pub struct MessageRegistry {
     pub map: HashMap<u8, fn(&[u8]) -> Box<dyn MessageScript>>,

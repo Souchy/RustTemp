@@ -5,8 +5,8 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use crate::{Reader, Writer};
 use crate::net::handler::Pipeline;
 
-use super::handler::MessageRegistry;
-use super::messages::ping::PingMsg;
+use crate::net::handler::MessageRegistry;
+use crate::net::messages::{ping::PingMsg, chat::ChatMsg};
 
 pub struct Client {
     reader: Reader,
@@ -37,11 +37,13 @@ impl Client {
 			// TODO: pipeline sucks, just use messageRegistry, but also we need a global Registry for all clients, maybe cloned from server, maybe Arc<>, it's not mutable
 			self.pipeline.handle(&buf);
 
-			let mut reg = MessageRegistry::new();
-			reg.register(PingMsg::uid(), PingMsg::deserialize);
-			let msg = reg.deserialize(&buf[0..n]);
-			msg.handle(&self);
+			// let mut reg = MessageRegistry::new();
+			// reg.register(PingMsg::uid(), PingMsg::deserialize);
 			// reg.register(ChatMsg::uid(), ChatMsg::deserialize);
+			// let msg = reg.deserialize(&buf[0..n]);
+			// msg.handle(&self);
+
+
             // let st = std::str::from_utf8(&buf).unwrap();
             // println!("received: {}", st);
             // self.writer.lock().await.write_all(b"ping").await.expect("msg");
@@ -50,45 +52,3 @@ impl Client {
     }
 }
 
-
-
-
-// use derive_new::new;
-// use serde::{Deserialize, Serialize};
-// use std::{
-//     any::{self, type_name, Any}, collections::HashMap, ptr::null, str::Bytes
-// };
-// use super::message::MessageScript;
-
-// #[derive(Debug, Default, Serialize, Deserialize)]
-// struct ChatMsg {
-//     channel: String,
-//     text: String,
-// }
-// impl ChatMsg {
-// 	fn uid() -> u8 { 2 }
-//     fn deserialize(bytes: &[u8]) -> Box<dyn MessageScript> {
-// 		let i: Self = bincode::deserialize(&bytes[..]).unwrap();
-// 		return Box::new(i);
-// 	}
-// }
-// // impl Message for ChatMsg {
-// //     fn create() -> Box<dyn MessageScript> {
-// //         Box::new(ChatMsg {
-// //             ..Default::default()
-// //         })
-// //     }
-// // }
-// impl MessageScript for ChatMsg {
-//     fn id(&self) -> u8 { Self::uid() }
-//     async fn handle(&self, client: &Client) {
-//         println!("yo we got ping data {:?}", self);
-// 		client.writer.lock().await.write_all(b"pong").await.expect("msg");
-//     }
-//     fn send(&self, socket_maybe: &Client) {
-//         todo!()
-//     }
-//     fn serialize(&self) -> Vec<u8> {
-//         bincode::serialize(&self).unwrap()
-//     }
-// }

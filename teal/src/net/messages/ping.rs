@@ -6,6 +6,7 @@ use std::{
     ptr::null,
     str::Bytes,
 };
+use tokio::io::AsyncWriteExt;
 
 use crate::net::{client::Client, message::MessageScript};
 

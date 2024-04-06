@@ -3,9 +3,9 @@ use std::{error::Error, sync::Arc};
 
 use tokio::{net::TcpListener, sync::Mutex};
 use tracing::{debug, error, info, instrument};
-use crate::net::client::Client;
 
-use super::handler::Pipeline;
+use crate::net::client::Client;
+use crate::net::handler::Pipeline;
 
 
 struct Server {
