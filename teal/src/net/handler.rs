@@ -57,7 +57,7 @@ use std::{
 use crate::net::message::MessageScript;
 
 pub struct MessageRegistry {
-    pub map: HashMap<u8, fn(&[u8]) -> Arc<dyn MessageScript>>,
+    pub map: HashMap<u8, fn(&[u8]) -> Arc<dyn MessageScript + Sync + Send>>,
 }
 impl MessageRegistry {
 	pub fn new() -> Self {
@@ -65,13 +65,13 @@ impl MessageRegistry {
 			map: HashMap::new(),
 		}
 	}
-    pub fn register(&mut self, id: u8, msg: fn(&[u8]) -> Arc<dyn MessageScript>) {
+    pub fn register(&mut self, id: u8, msg: fn(&[u8]) -> Arc<dyn MessageScript + Sync + Send>) {
         self.map.insert(id, msg);
     }
-    pub fn deserialize(&self, frame: &[u8]) -> Arc<dyn MessageScript> {
+    pub fn deserialize(&self, frame: &[u8]) -> Option<Arc<dyn MessageScript + Sync + Send>> {
 		let id = frame[0];
-		let deserializer = self.map.get(&id).unwrap();
-		let dsa = deserializer(&frame[1..]);
-		return dsa;
+		let deserializer = self.map.get(&id)?;
+		let script = deserializer(&frame[1..]);
+		return Some(script);
 	}
 }

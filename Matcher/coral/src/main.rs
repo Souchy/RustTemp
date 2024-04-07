@@ -22,7 +22,12 @@
 #![warn(rust_2018_idioms)]
 
 use bytes::{Buf, BytesMut};
+use teal::net::handler::MessageRegistry;
+use teal::net::messages::chat::ChatMsg;
+use teal::net::messages::ping::PingMsg;
+use teal::net::server::Server;
 use std::io::{self, Cursor};
+use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
 use tokio::net::{TcpListener, TcpStream};
 use tracing::{debug, error, info, instrument};
@@ -31,8 +36,6 @@ use miniredis::server;
 use std::env;
 use std::error::Error;
 use teal::onyx::User;
-
-pub mod wish;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -47,6 +50,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .nth(1)
         .unwrap_or_else(|| "127.0.0.1:8080".to_string());
 
+    let mut reg = MessageRegistry::new();
+    reg.register(PingMsg::uid(), PingMsg::deserialize);
+    reg.register(ChatMsg::uid(), ChatMsg::deserialize);
+
+    Server::new(Arc::new(reg)).run(addr).await
+
+    /*
     // Next up we create a TCP listener which will listen for incoming
     // connections. This TCP listener is bound to the address we determined
     // above and must be associated with an event loop.
@@ -97,10 +107,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
             // }
         });
     }
+    */
 }
 
 // pub type Result<T> = std::result::Result<T, Error>;
 
+/*
 #[derive(Debug)]
 pub struct Client {
     socket: TcpStream,
@@ -140,10 +152,11 @@ impl Client {
         // with buffer
         loop {
             // let n = self.stream.read_buf(&mut self.buffer).await?;
-                let n = self.socket
-                    .read(&mut buf)
-                    .await
-                    .expect("failed to read data from socket");
+            let n = self
+                .socket
+                .read(&mut buf)
+                .await
+                .expect("failed to read data from socket");
             if n == 0 {
                 println!("client connected terminated");
                 return Ok(());
@@ -167,12 +180,11 @@ impl Client {
             println!("received: {}", st);
 
             // self.buffer.advance(n);
-
         }
         Ok(())
     }
 }
-
+*/
 /*
 struct Listener;
 impl Listener {

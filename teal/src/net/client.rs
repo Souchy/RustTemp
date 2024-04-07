@@ -36,7 +36,7 @@ impl Client {
             .await;
         return Ok(result?);
     }
-    pub async fn run(&self) -> Result<(), Box<dyn Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn Error + Send>> {
         // println!("t1 start");
         let mut buf = vec![0; 4 * 1024];
         loop {
@@ -55,15 +55,17 @@ impl Client {
 
 			// TODO: pipeline sucks, just use messageRegistry, but also we need a global Registry for all clients, maybe cloned from server, maybe Arc<>, it's not mutable
 			// self.pipeline.handle(&buf);
-			// let msg = self.handlers.deserialize(&buf[0..n]);
+			let msg = self.handlers.deserialize(&buf[0..n]);
+            if msg.is_some() {
+                // // let re = Arc::new(self);
+                let fds = msg.unwrap().handle(self).await;
+                // self.handlers.deserialize(&buf[0..n]).handle(self).await;
+            } else {
+                let st = std::str::from_utf8(&buf[0..n]).unwrap();
+                println!("received: {}", st);
+                self.writer.lock().await.write_all(b"pong").await.expect("msg");
+            }
 
-            // // let re = Arc::new(self);
-			// let fds = msg.handle(self).await;
-            self.handlers.deserialize(&buf[0..n]).handle(self).await;
-
-            // let st = std::str::from_utf8(&buf).unwrap();
-            // println!("received: {}", st);
-            // self.writer.lock().await.write_all(b"ping").await.expect("msg");
         }
 		Ok(())
     }

@@ -18,7 +18,7 @@ impl PingMsg {
     pub fn uid() -> u8 {
         1
     }
-    pub fn deserialize(bytes: &[u8]) -> Arc<dyn MessageScript> {
+    pub fn deserialize(bytes: &[u8]) -> Arc<dyn MessageScript + Sync + Send> {
         let i = bincode::deserialize::<Self>(&bytes[..]).unwrap();
         return Arc::new(i);
     }
@@ -34,7 +34,7 @@ impl MessageScript for PingMsg {
     }
     async fn handle(&self, client: &Client) -> Result<(), Box<dyn Error>> {
         println!("yo we got ping data {:?}", self);
-        client.send(b"pong").await?;
+        client.send(b"pong").await
         // client
         //     .writer
         //     .lock()
@@ -42,9 +42,9 @@ impl MessageScript for PingMsg {
         //     .write_all(b"pong")
         //     .await
         //     .expect("msg");
-		Ok(())
+		// Ok(())
     }
     async fn send(&self, socket_maybe: &Client) -> Result<(), Box<dyn Error>> {
-        todo!()
+        socket_maybe.send(&MessageScript::serialize(self)).await
     }
 }

@@ -16,7 +16,7 @@ pub struct ChatMsg {
 }
 impl ChatMsg {
 	pub fn uid() -> u8 { 2 }
-    pub fn deserialize(bytes: &[u8]) -> Arc<dyn MessageScript> {
+    pub fn deserialize(bytes: &[u8]) -> Arc<dyn MessageScript + Sync + Send> {
 		let i: Self = bincode::deserialize(&bytes[..]).unwrap();
 		return Arc::new(i);
 	}
@@ -29,12 +29,12 @@ impl MessageScript for ChatMsg {
         bincode::serialize(&self).unwrap()
     }
     async fn handle(&self, client: &Client) -> Result<(), Box<dyn Error>> {
-        println!("yo we got ping data {:?}", self);
+        println!("yo we got chat data {:?}", self);
         client.send(b"pong").await?;
 		// client.writer.lock().await.write_all(b"pong").await.expect("msg");
         Ok(())
     }
     async fn send(&self, socket_maybe: &Client) -> Result<(), Box<dyn Error>> {
-        todo!()
+        socket_maybe.send(&MessageScript::serialize(self)).await
     }
 }
