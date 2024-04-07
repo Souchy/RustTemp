@@ -11,8 +11,8 @@ use crate::net::{client::Client, message::MessageScript};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ChatMsg {
-    channel: String,
-    text: String,
+    pub channel: String,
+    pub text: String,
 }
 impl ChatMsg {
 	pub fn uid() -> u8 { 2 }
@@ -30,11 +30,8 @@ impl MessageScript for ChatMsg {
     }
     async fn handle(&self, client: &Client) -> Result<(), Box<dyn Error>> {
         println!("yo we got chat data {:?}", self);
-        client.send(b"pong").await?;
+        client.send(b"chat").await?;
 		// client.writer.lock().await.write_all(b"pong").await.expect("msg");
         Ok(())
-    }
-    async fn send(&self, socket_maybe: &Client) -> Result<(), Box<dyn Error>> {
-        socket_maybe.send(&MessageScript::serialize(self)).await
     }
 }

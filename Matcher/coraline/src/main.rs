@@ -13,6 +13,7 @@
 
 use teal::net::client::Client;
 use teal::net::handler::MessageRegistry;
+use teal::net::message::MessageScript;
 use teal::net::messages::chat::ChatMsg;
 use teal::net::messages::ping::PingMsg;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -70,8 +71,16 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
             .write_all(b"hello world1")
             .await;
         */
-        let result = client_ref2.send(b"hello world1").await;
-        println!("wrote to stream; success={:?}", result.is_ok());
+        // let result = client_ref2.send(b"hello world1").await;
+        // println!("wrote to stream; success={:?}", result.is_ok());
+
+        let chat = ChatMsg {
+            channel: String::from("general"),
+            text: String::from("hello")
+        };
+        chat.send(&client_ref2).await;
+
+        // let result = client_ref2.send()
 
         // let res2 = writer2
         //     .lock()

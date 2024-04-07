@@ -44,7 +44,7 @@ impl MessageScript for PingMsg {
         //     .expect("msg");
 		// Ok(())
     }
-    async fn send(&self, socket_maybe: &Client) -> Result<(), Box<dyn Error>> {
-        socket_maybe.send(&MessageScript::serialize(self)).await
-    }
+    // async fn send(&self, socket_maybe: &Client) -> Result<(), Box<dyn Error>> {
+    //     socket_maybe.send(&MessageScript::serialize(self)).await
+    // }
 }
