@@ -59,15 +59,44 @@ impl Client {
 
             println!("read {}", n);
             if n == 0 {
-                println!("client connected terminated");
+                println!("client stream terminated");
                 break;
             }
 
-            self.handlers
-                .handle(&buf[0..n], self)
-                .await
-                .expect("message handling error");
+            // total msg length, including the header (2 bytes for len + id)
+            let msg_length = buf[0] as usize;
+            
+            // fragmentation
+            if msg_length < n {
+                let mut i = 0;
+                let mut end = msg_length;
+                while i < n {
+                    self.frame(&buf[i..end]).await;
+                    i = end;
+                    end += buf[i] as usize;
+                }
+                // TODO problem: 
+                // the last message read could be incomplete
+                // on check 'i < n', puis lit le header du packet, mais 'end' pourrait dépasser 'n'
+            } 
+            // perfect packet size
+            else if msg_length == n {
+                self.frame(&buf[0..n]).await;
+            }
+            // defragmentation 
+            else if msg_length > n {
+                // this might happen if we send huge packets. obviously also if we go over the buffer size of 4*1024
+                panic!("message size is bigger than packet size received, need to read more");
+            }
         }
         Ok(())
     }
+
+    async fn frame(&self, buf: &[u8]) {
+        self.handlers
+        .handle(&buf, self)
+        .await
+        .expect("message handling error");
+    }
+
 }

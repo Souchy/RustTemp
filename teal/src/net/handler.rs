@@ -19,9 +19,10 @@ impl MessageHandlers {
     }
 
     fn deserialize(&self, frame: &[u8]) -> Option<Message> {
-        let id = frame[0];
+        let len = frame[0] as usize;
+        let id = frame[1];
         let deserializer = self.map.get(&id)?;
-        let script = deserializer(&frame[1..]);
+        let script = deserializer(&frame[2..len]);
         return Some(script);
     }
 

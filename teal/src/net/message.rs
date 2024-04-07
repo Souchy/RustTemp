@@ -17,7 +17,8 @@ pub trait MessageScript {
     async fn handle(&self, client: &Client) -> Result<(), Box<dyn Error>>;
     async fn send(&self, client: &Client) -> Result<(), Box<dyn Error>> {
         let mut buf = MessageScript::serialize(self);
-        buf.insert(0, self.id());
+        buf.insert(0, buf.len() as u8 + 2);
+        buf.insert(1, self.id());
         client.send_bytes(&buf).await
     }
 }
