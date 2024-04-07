@@ -11,24 +11,18 @@ use super::Message;
 
 
 pub struct Server {
-	// pipeline: Pipeline,
 	handlers: Arc<MessageHandlers>,
 	clients: Vec<Arc<Client>>
 }
 
 impl Server {
-	pub fn new(/* pipeline: Pipeline, */ handlers: Arc<MessageHandlers>) -> Self {
+	pub fn new(handlers: Arc<MessageHandlers>) -> Self {
 		Self {
-			// pipeline,
 			handlers,
 			clients: Vec::new()
 		}
 	}
 	pub async fn run(&mut self, addr: String) -> Result<(), Box<dyn Error>> {
-		// let addr = env::args()
-        // .nth(1)
-        // .unwrap_or_else(|| "127.0.0.1:8080".to_string());
-
 		// Next up we create a TCP listener which will listen for incoming
 		// connections. This TCP listener is bound to the address we determined
 		// above and must be associated with an event loop.
@@ -48,15 +42,15 @@ impl Server {
 			// Essentially here we're executing a new task to run concurrently,
 			// which will allow all of our clients to be processed concurrently.
 
-			let client: Client = Client::new(socket, self.handlers.clone()); //self.pipeline.clone());
-			let client_ref = Arc::new(client);
-			let client_ref2 = client_ref.clone();
-			self.clients.push(client_ref);
+			let client: Client = Client::new(socket, self.handlers.clone());
+			let client_broadcaster = Arc::new(client);
+			let client_runner = client_broadcaster.clone();
+			self.clients.push(client_broadcaster);
 
 			tokio::spawn(async move {
 				// client.run().await ;
-				if let Err(err) = client_ref2.run().await {
-					error!(cause = ?err, "connection error");
+				if let Err(err) = client_runner.run().await {
+					error!(cause = ?err, "client connection error");
 				}
 			});
 		}

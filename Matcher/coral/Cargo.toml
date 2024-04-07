@@ -10,7 +10,6 @@ proc-macro = true
 
 [dependencies]
 teal = { path = "../../teal" }
-miniredis = { path = "../../miniredis" }
 redis = "*"
 tokio = {version = "*", features = ["full"]}
 serde = "1.0.188"

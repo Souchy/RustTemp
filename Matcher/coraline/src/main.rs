@@ -31,9 +31,9 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
             channel: String::from("general"),
             text: String::from("hello")
         };
-        chat.send(&client_ref2).await.unwrap();
+        chat.send(&client_ref2).await;
         
-        client_ref2.send(PingMsg::new()).await.unwrap();
+        client_ref2.send(PingMsg::new()).await;
     });
 
     t2.await?;
@@ -43,35 +43,3 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-/*
-struct Client {
-    reader: Reader,
-    writer: Writer,
-}
-impl Client {
-    fn new(reader: Reader, writer: Writer) -> Self {
-        Self { reader, writer }
-    }
-    async fn run(&self) {
-        println!("t1 start");
-        let mut buf = vec![0; 4 * 1024];
-        loop {
-            let mut tr = self.reader.lock().await;
-            // let mut tr = r;
-            let n = tr
-                .read(&mut buf)
-                .await
-                .expect("failed to read data from socket");
-            // println!("read!: {}", n);
-            if n == 0 {
-                println!("client connected terminated");
-                break;
-            }
-
-            let st = std::str::from_utf8(&buf).unwrap();
-            println!("received: {}", st);
-            self.writer.lock().await.write_all(b"ping").await.expect("msg");
-        }
-    }
-}
-*/
