@@ -13,6 +13,8 @@
 
 use teal::net::client::Client;
 use teal::net::handler::MessageRegistry;
+use teal::net::messages::chat::ChatMsg;
+use teal::net::messages::ping::PingMsg;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf, ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
@@ -52,17 +54,23 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     reg.register(ChatMsg::uid(), ChatMsg::deserialize);
     let client: Client = Client::new_connection("127.0.0.1:8080", Arc::new(reg)).await?;
 
+    let client_ref = Arc::new(client);
+    let client_ref2 = client_ref.clone();
+
     let t1 = tokio::spawn(async move {
-        client.run().await;
+        client_ref.run().await;
     });
     let t2 = tokio::spawn(async move {
         println!("t2 start");
+        /*
         // let mut tw = writer.lock().await;
         let mut result = writer2
             .lock()
             .await
             .write_all(b"hello world1")
             .await;
+        */
+        let result = client_ref2.send(b"hello world1").await;
         println!("wrote to stream; success={:?}", result.is_ok());
 
         // let res2 = writer2

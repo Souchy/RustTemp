@@ -52,12 +52,12 @@ impl Pipeline {
 //	2. message handler
 use serde::{Deserialize, Serialize};
 use std::{
-    any::{self, type_name, Any}, collections::HashMap, ptr::null, str::Bytes
+    any::{self, type_name, Any}, collections::HashMap, ptr::null, str::Bytes, sync::Arc
 };
 use crate::net::message::MessageScript;
 
 pub struct MessageRegistry {
-    pub map: HashMap<u8, fn(&[u8]) -> Box<dyn MessageScript>>,
+    pub map: HashMap<u8, fn(&[u8]) -> Arc<dyn MessageScript>>,
 }
 impl MessageRegistry {
 	pub fn new() -> Self {
@@ -65,10 +65,10 @@ impl MessageRegistry {
 			map: HashMap::new(),
 		}
 	}
-    pub fn register(&mut self, id: u8, msg: fn(&[u8]) -> Box<dyn MessageScript>) {
+    pub fn register(&mut self, id: u8, msg: fn(&[u8]) -> Arc<dyn MessageScript>) {
         self.map.insert(id, msg);
     }
-    pub fn deserialize(&self, frame: &[u8]) -> Box<dyn MessageScript> {
+    pub fn deserialize(&self, frame: &[u8]) -> Arc<dyn MessageScript> {
 		let id = frame[0];
 		let deserializer = self.map.get(&id).unwrap();
 		let dsa = deserializer(&frame[1..]);

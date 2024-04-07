@@ -52,6 +52,7 @@ impl Server {
 			let client: Client = Client::new(socket, self.handlers.clone()); //self.pipeline.clone());
 	
 			tokio::spawn(async move {
+				// client.run().await ;
 				if let Err(err) = client.run().await {
 					error!(cause = ?err, "connection error");
 				}

@@ -3,20 +3,19 @@ use std::sync::Arc;
 
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
-use tokio::{net::TcpListener, sync::Mutex};
+use tokio::sync::Mutex;
 
 use crate::{Reader, Writer};
-use crate::net::handler::Pipeline;
-
 use crate::net::handler::MessageRegistry;
-use crate::net::messages::{ping::PingMsg, chat::ChatMsg};
 
+#[derive(Clone)]
 pub struct Client {
     reader: Reader,
-    pub writer: Writer,
+    writer: Writer,
 	// pipeline: Pipeline
 	handlers: Arc<MessageRegistry>
 }
+
 impl Client {
     pub fn new(socket: TcpStream, handlers: Arc<MessageRegistry>) -> Self {
 		let (r, w) = socket.into_split(); 
@@ -29,6 +28,14 @@ impl Client {
 		Ok(Self::new(socket, handlers))
 	}
 
+    pub async fn send(&self, buf: &[u8]) -> Result<(), Box<dyn Error>> {
+        let result = self.writer
+            .lock()
+            .await
+            .write_all(buf)
+            .await;
+        return Ok(result?);
+    }
     pub async fn run(&self) -> Result<(), Box<dyn Error>> {
         // println!("t1 start");
         let mut buf = vec![0; 4 * 1024];
@@ -48,8 +55,11 @@ impl Client {
 
 			// TODO: pipeline sucks, just use messageRegistry, but also we need a global Registry for all clients, maybe cloned from server, maybe Arc<>, it's not mutable
 			// self.pipeline.handle(&buf);
-			let msg = self.handlers.deserialize(&buf[0..n]);
-			msg.handle(&self).await;
+			// let msg = self.handlers.deserialize(&buf[0..n]);
+
+            // // let re = Arc::new(self);
+			// let fds = msg.handle(self).await;
+            self.handlers.deserialize(&buf[0..n]).handle(self).await;
 
             // let st = std::str::from_utf8(&buf).unwrap();
             // println!("received: {}", st);
