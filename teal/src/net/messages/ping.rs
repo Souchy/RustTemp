@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use derive_new::new;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -23,6 +24,7 @@ impl PingMsg {
     }
 }
 
+#[async_trait]
 impl MessageScript for PingMsg {
     fn id(&self) -> u8 {
         Self::uid()

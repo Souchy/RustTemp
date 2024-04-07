@@ -1,5 +1,6 @@
 
 
+use async_trait::async_trait;
 use derive_new::new;
 use serde::{Deserialize, Serialize};
 use tokio::io::AsyncWriteExt;
@@ -21,6 +22,7 @@ impl ChatMsg {
 	}
 }
 
+#[async_trait]
 impl MessageScript for ChatMsg {
     fn id(&self) -> u8 { Self::uid() }
     fn serialize(&self) -> Vec<u8> {

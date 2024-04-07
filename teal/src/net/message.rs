@@ -1,4 +1,5 @@
 
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::{
     any::{self, type_name, Any}, collections::HashMap, error::Error, ptr::null, str::Bytes
@@ -6,6 +7,7 @@ use std::{
 use crate::net::client::Client;
 
 
+#[async_trait]
 pub trait MessageScript {
     fn name(&self) -> String {
         String::from("") //type_name::<Self>())

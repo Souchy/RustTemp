@@ -11,6 +11,8 @@
 
 #![warn(rust_2018_idioms)]
 
+use teal::net::client::Client;
+use teal::net::handler::MessageRegistry;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf, ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
@@ -29,6 +31,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     // Open a TCP stream to the socket address.
     //
     // Note that this is the Tokio TcpStream, which is fully async.
+    /*/
     let s = TcpStream::connect("127.0.0.1:8080").await?;
     let (mut r, mut w) = s.into_split(); //tokio::io::split(s);
                                          // let reader = Arc::new(r);
@@ -43,6 +46,11 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     println!("created stream");
 
     let client = Client::new(reader, writer);
+    */
+    let mut reg = MessageRegistry::new();
+    reg.register(PingMsg::uid(), PingMsg::deserialize);
+    reg.register(ChatMsg::uid(), ChatMsg::deserialize);
+    let client: Client = Client::new_connection("127.0.0.1:8080", Arc::new(reg)).await?;
 
     let t1 = tokio::spawn(async move {
         client.run().await;
@@ -74,6 +82,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+/*
 struct Client {
     reader: Reader,
     writer: Writer,
@@ -104,3 +113,4 @@ impl Client {
         }
     }
 }
+*/

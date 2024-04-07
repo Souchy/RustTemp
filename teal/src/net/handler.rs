@@ -32,7 +32,7 @@ pub struct Pipeline {
 }
 impl Pipeline {
 	pub fn handle(&self, buf: &[u8]) {
-		for h in self.handlers {
+		for h in &self.handlers {
 			h()
 		}
 	}
