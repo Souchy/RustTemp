@@ -5,27 +5,26 @@ use tokio::{net::TcpListener, sync::Mutex};
 use tracing::{debug, error, info, instrument};
 
 use crate::net::client::Client;
-use crate::net::handler::{Pipeline, MessageRegistry};
+use crate::net::handler::MessageHandlers;
+
+use super::Message;
 
 
-			// let mut reg = MessageRegistry::new();
-			// reg.register(PingMsg::uid(), PingMsg::deserialize);
-			// reg.register(ChatMsg::uid(), ChatMsg::deserialize);
-			// let msg = reg.deserialize(&buf[0..n]);
-			// let res = msg.handle(&self).await?;
 pub struct Server {
 	// pipeline: Pipeline,
-	handlers: Arc<MessageRegistry>
+	handlers: Arc<MessageHandlers>,
+	clients: Vec<Arc<Client>>
 }
 
 impl Server {
-	pub fn new(/* pipeline: Pipeline, */ handlers: Arc<MessageRegistry>) -> Self {
+	pub fn new(/* pipeline: Pipeline, */ handlers: Arc<MessageHandlers>) -> Self {
 		Self {
 			// pipeline,
-			handlers
+			handlers,
+			clients: Vec::new()
 		}
 	}
-	pub async fn run(&self, addr: String) -> Result<(), Box<dyn Error>> {
+	pub async fn run(&mut self, addr: String) -> Result<(), Box<dyn Error>> {
 		// let addr = env::args()
         // .nth(1)
         // .unwrap_or_else(|| "127.0.0.1:8080".to_string());
@@ -50,13 +49,21 @@ impl Server {
 			// which will allow all of our clients to be processed concurrently.
 
 			let client: Client = Client::new(socket, self.handlers.clone()); //self.pipeline.clone());
-	
+			let client_ref = Arc::new(client);
+			let client_ref2 = client_ref.clone();
+			self.clients.push(client_ref);
+
 			tokio::spawn(async move {
 				// client.run().await ;
-				if let Err(err) = client.run().await {
+				if let Err(err) = client_ref2.run().await {
 					error!(cause = ?err, "connection error");
 				}
 			});
 		}
 	}
+
+	pub async fn broadcast(&self, msg: Message) {
+
+	}
+
 }

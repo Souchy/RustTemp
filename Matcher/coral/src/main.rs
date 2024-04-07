@@ -22,9 +22,10 @@
 #![warn(rust_2018_idioms)]
 
 use bytes::{Buf, BytesMut};
-use teal::net::handler::MessageRegistry;
+use teal::net::handler::MessageHandlers;
 use teal::net::messages::chat::ChatMsg;
 use teal::net::messages::ping::PingMsg;
+use teal::net::messages::pong::PongMsg;
 use teal::net::server::Server;
 use std::io::{self, Cursor};
 use std::sync::Arc;
@@ -50,11 +51,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .nth(1)
         .unwrap_or_else(|| "127.0.0.1:8080".to_string());
 
-    let mut reg = MessageRegistry::new();
-    reg.register(PingMsg::uid(), PingMsg::deserialize);
+    let mut reg = MessageHandlers::new();
     reg.register(ChatMsg::uid(), ChatMsg::deserialize);
+    reg.register(PingMsg::uid(), PingMsg::deserialize);
+    reg.register(PongMsg::uid(), PongMsg::deserialize);
 
-    Server::new(Arc::new(reg)).run(addr).await
+    Server::new(Arc::new(reg)).run(addr).await;
+    Ok(())
 
     /*
     // Next up we create a TCP listener which will listen for incoming
