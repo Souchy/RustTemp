@@ -8,21 +8,24 @@ use tokio::sync::Mutex;
 use crate::net::handler::MessageHandlers;
 use crate::{Reader, Writer};
 
+use super::server::Server;
 use super::Message;
 
 #[derive(Clone)]
 pub struct Client {
+    server: Option< Arc<Mutex<Server>>>,
     reader: Reader,
     writer: Writer,
     handlers: Arc<MessageHandlers>,
 }
 
 impl Client {
-    pub fn new(socket: TcpStream, handlers: Arc<MessageHandlers>) -> Self {
+    pub fn new(socket: TcpStream, handlers: Arc<MessageHandlers>, server: Option<Arc<Mutex<Server>>>) -> Self {
         let (r, w) = socket.into_split();
         let reader = Arc::new(Mutex::new(r));
         let writer = Arc::new(Mutex::new(w));
         Self {
+            server,
             reader,
             writer,
             handlers,
@@ -34,7 +37,7 @@ impl Client {
         handlers: Arc<MessageHandlers>,
     ) -> Result<Self, Box<dyn Error>> {
         let socket = TcpStream::connect(addr).await?;
-        Ok(Self::new(socket, handlers))
+        Ok(Self::new(socket, handlers, None))
     }
 
     pub async fn send_bytes(&self, buf: &[u8]) -> Result<(), Box<dyn Error>> {
@@ -97,6 +100,10 @@ impl Client {
         .handle(&buf, self)
         .await
         .expect("message handling error");
+    }
+
+    pub async fn broadcast(&mut self, msg: Message) {
+        self.server.as_ref().unwrap().lock().await.broadcast(msg).await
     }
 
 }

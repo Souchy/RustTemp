@@ -50,6 +50,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     reg.register(PingMsg::uid(), PingMsg::deserialize);
     reg.register(PongMsg::uid(), PongMsg::deserialize);
 
-    Server::new(Arc::new(reg)).run(addr).await;
+    Server::run(addr, Arc::new(reg)).await.ok();
+    
     Ok(())
 }

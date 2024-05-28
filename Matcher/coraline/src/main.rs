@@ -31,9 +31,9 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
             channel: String::from("general"),
             text: String::from("hello")
         };
-        chat.send(&client_ref2).await;
+        chat.send(&client_ref2).await.ok();
         
-        client_ref2.send(PingMsg::new()).await;
+        client_ref2.send(PingMsg::new()).await.ok();
     });
 
     t2.await?;
