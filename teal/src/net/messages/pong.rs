@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use std::{error::Error, sync::Arc};
+use std::{any::Any, error::Error, sync::Arc};
 
 use crate::net::{client::Client, message::MessageScript};
 
@@ -30,5 +30,8 @@ impl MessageScript for PongMsg {
     async fn handle(&self, client: &Client) -> Result<(), Box<dyn Error>> {
         println!("yo we got pong data {:?}", self);
         Ok(())
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }

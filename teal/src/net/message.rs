@@ -11,7 +11,7 @@ use std::{
 };
 
 #[async_trait]
-pub trait MessageScript {
+pub trait MessageScript: Any + Send + Sync  {
     fn name(&self) -> String {
         String::from(type_name::<Self>())
     }
@@ -24,6 +24,10 @@ pub trait MessageScript {
         buf.insert(1, self.id());
         client.send_bytes(&buf).await
     }
+    fn as_any(&self) -> &dyn Any;
+    // fn as_any(&self) -> Arc<dyn Any + Send + Sync> {
+    //     self
+    // }
 }
 
 

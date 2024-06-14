@@ -1,7 +1,7 @@
-use crate::net::{client::Client, message::MessageScript};
+use crate::net::{client::Client, message::MessageScript, Message};
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use std::{error::Error, sync::Arc};
+use std::{any::Any, error::Error, sync::Arc};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ChatMsg {
@@ -15,9 +15,10 @@ impl ChatMsg {
     pub fn uid() -> u8 {
         3
     }
-    pub fn deserialize(bytes: &[u8]) -> Arc<dyn MessageScript + Sync + Send> {
+    pub fn deserialize(bytes: &[u8]) -> Message {
         let i: Self = bincode::deserialize(&bytes[..]).unwrap();
-        return Arc::new(i);
+        let a = Arc::new(i);
+        return a;
     }
 }
 
@@ -32,5 +33,8 @@ impl MessageScript for ChatMsg {
     async fn handle(&self, client: &Client) -> Result<(), Box<dyn Error>> {
         println!("yo we got chat data {:?}", self);
         Ok(())
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }

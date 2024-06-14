@@ -1,8 +1,8 @@
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use std::{error::Error, sync::Arc};
+use std::{any::Any, error::Error, sync::Arc};
 
-use crate::net::{client::Client, message::MessageScript, messages::pong::PongMsg};
+use crate::net::{client::Client, message::MessageScript, messages::pong::PongMsg, Message};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct PingMsg {}
@@ -30,5 +30,8 @@ impl MessageScript for PingMsg {
     async fn handle(&self, client: &Client) -> Result<(), Box<dyn Error>> {
         println!("yo we got ping data {:?}", self);
         client.send(PongMsg::new()).await
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }

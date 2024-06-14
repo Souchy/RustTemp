@@ -20,8 +20,12 @@
 //! should be able to see them all make progress simultaneously.
 
 #![warn(rust_2018_idioms)]
+mod handlers;
+use handlers::ping_handler::PingHandler;
+use handlers::chat_handler::ChatHandler;
+use handlers::pong_handler::PongHandler;
 
-use teal::net::handler::MessageHandlers;
+use teal::net::handlers::MessageHandlers;
 use teal::net::messages::chat::ChatMsg;
 use teal::net::messages::ping::PingMsg;
 use teal::net::messages::pong::PongMsg;
@@ -46,9 +50,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .unwrap_or_else(|| "127.0.0.1:8080".to_string());
 
     let mut reg = MessageHandlers::new();
-    reg.register(ChatMsg::uid(), ChatMsg::deserialize);
-    reg.register(PingMsg::uid(), PingMsg::deserialize);
-    reg.register(PongMsg::uid(), PongMsg::deserialize);
+    reg.register(ChatMsg::uid(), ChatMsg::deserialize, Arc::new(ChatHandler));
+    reg.register(PingMsg::uid(), PingMsg::deserialize, Arc::new(PingHandler));
+    reg.register(PongMsg::uid(), PongMsg::deserialize, Arc::new(PongHandler));
 
     Server::run(addr, Arc::new(reg)).await.ok();
     

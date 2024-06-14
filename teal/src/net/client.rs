@@ -5,7 +5,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 
-use crate::net::handler::MessageHandlers;
+use crate::net::handlers::MessageHandlers;
 use crate::{Reader, Writer};
 
 use super::server::Server;
@@ -13,10 +13,10 @@ use super::Message;
 
 #[derive(Clone)]
 pub struct Client {
-    server: Option< Arc<Mutex<Server>>>,
-    reader: Reader,
-    writer: Writer,
-    handlers: Arc<MessageHandlers>,
+    pub server: Option<Arc<Mutex<Server>>>,
+    pub reader: Reader,
+    pub writer: Writer,
+    pub handlers: Arc<MessageHandlers>,
 }
 
 impl Client {

@@ -5,7 +5,7 @@ use tokio::{net::TcpListener, sync::Mutex};
 use tracing::{debug, error, info, instrument};
 
 use crate::net::client::Client;
-use crate::net::handler::MessageHandlers;
+use crate::net::handlers::MessageHandlers;
 
 use super::Message;
 

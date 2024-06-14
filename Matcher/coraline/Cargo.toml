@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 teal = { path = "../../teal" }
-tokio = {version = "1.32.0", features = ["full"]}
+tokio = {version = "*", features = ["full"]}
 serde = "1.0.188"
 futures = "0.3.28"
+async-trait = "0.1.79"

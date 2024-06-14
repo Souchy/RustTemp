@@ -1,6 +1,10 @@
+mod handlers;
+use handlers::ping_handler::PingHandler;
+use handlers::chat_handler::ChatHandler;
+use handlers::pong_handler::PongHandler;
 
 use teal::net::client::Client;
-use teal::net::handler::MessageHandlers;
+use teal::net::handlers::MessageHandlers;
 use teal::net::message::MessageScript;
 use teal::net::messages::chat::ChatMsg;
 use teal::net::messages::ping::PingMsg;
@@ -9,12 +13,13 @@ use teal::net::messages::pong::PongMsg;
 use std::error::Error;
 use std::sync::Arc;
 
+
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
     let mut reg = MessageHandlers::new();
-    reg.register(ChatMsg::uid(), ChatMsg::deserialize);
-    reg.register(PingMsg::uid(), PingMsg::deserialize);
-    reg.register(PongMsg::uid(), PongMsg::deserialize);
+    reg.register(ChatMsg::uid(), ChatMsg::deserialize, Arc::new(ChatHandler));
+    reg.register(PingMsg::uid(), PingMsg::deserialize, Arc::new(PingHandler));
+    reg.register(PongMsg::uid(), PongMsg::deserialize, Arc::new(PongHandler));
 
     let client: Client = Client::new_connection("127.0.0.1:8080", Arc::new(reg)).await?;
 
@@ -29,10 +34,10 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
         println!("t2 start");
         let chat = ChatMsg {
             channel: String::from("general"),
-            text: String::from("hello")
+            text: String::from("hello"),
         };
         chat.send(&client_ref2).await.ok();
-        
+
         client_ref2.send(PingMsg::new()).await.ok();
     });
 
@@ -42,4 +47,3 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
